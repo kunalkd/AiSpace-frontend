@@ -1,11 +1,12 @@
   "use client"
 
-import { useEffect, useState, lazy, Suspense } from "react"
+import { useEffect, useState, lazy, Suspense, useRef } from "react"
 const Galaxy = lazy(() => import("./Galaxy-bg"))
 const ImageCircularGallery = lazy(() => import("@/components/ui/image-gallery"))
 const MobileImageCarousel = lazy(() => import("@/components/ui/mobile-gallery"))
 import GlowingButton from "@/components/animated-button"
 import FloatingIcon from "@/components/icon-background"
+import { throttle } from "@/lib/utils"
 
 const GalleryPlaceholder = () => (
   <div className="relative w-full h-[62vh] sm:h-[56vh] md:h-[58vh] lg:h-[60vh]" aria-hidden="true" />
@@ -13,6 +14,7 @@ const GalleryPlaceholder = () => (
 
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false)
+  const parallaxElementsRef = useRef<NodeListOf<HTMLElement> | null>(null)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -24,16 +26,17 @@ export default function Hero() {
   // Optional parallax for non-mobile
   useEffect(() => {
     if (isMobile) return
-    const handleScroll = () => {
+    // Cache the elements
+    parallaxElementsRef.current = document.querySelectorAll<HTMLElement>(".parallax")
+    const handleScroll = throttle(() => {
       const scrollY = window.scrollY
-      const elements = document.querySelectorAll<HTMLElement>(".parallax")
-      elements.forEach((el) => {
+      parallaxElementsRef.current?.forEach((el) => {
         const speed = Number.parseFloat(el.dataset.speed || "0.05")
         const yPos = -scrollY * speed
         el.style.setProperty("--parallax-y", `${yPos}px`)
         el.style.transform = `translate3d(0, var(--parallax-y), 0)`
       })
-    }
+    }, 16) // ~60fps throttle
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isMobile])

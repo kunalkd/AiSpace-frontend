@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { cn } from "@/lib/utils"
+import { cn, throttle } from "@/lib/utils"
 import { Menu, X } from "lucide-react"
 
 const Navbar = () => {
@@ -10,9 +10,9 @@ const Navbar = () => {
   const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = throttle(() => {
       setIsScrolled(window.scrollY > 10)
-    }
+    }, 100) // Throttle to 10fps for simple check
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])

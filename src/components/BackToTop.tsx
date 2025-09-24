@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, throttle } from "@/lib/utils";
 
 const BackToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const toggleVisibility = () => {
+    const toggleVisibility = throttle(() => {
       // Show button when user scrolls past hero section (approximately 100vh)
       setIsVisible(window.scrollY > window.innerHeight);
-    };
+    }, 100); // Throttle to 10fps
 
     window.addEventListener("scroll", toggleVisibility, { passive: true });
 

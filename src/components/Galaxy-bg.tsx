@@ -1,5 +1,5 @@
 import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const vertexShader = `
 attribute vec2 uv;
@@ -212,6 +212,26 @@ export default function Galaxy({
   const smoothMousePos = useRef({ x: 0.5, y: 0.5 });
   const targetMouseActive = useRef(0.0);
   const smoothMouseActive = useRef(0.0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ctnDom.current) {
+      observer.observe(ctnDom.current);
+    }
+
+    return () => {
+      if (ctnDom.current) {
+        observer.unobserve(ctnDom.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!ctnDom.current) return;
@@ -288,25 +308,27 @@ export default function Galaxy({
 
     function update(t: number) {
       animateId = requestAnimationFrame(update);
-      if (!disableAnimation) {
-        program.uniforms.uTime.value = t * 0.001;
-        program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
+      if (isVisible) {
+        if (!disableAnimation) {
+          program.uniforms.uTime.value = t * 0.001;
+          program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
+        }
+
+        const lerpFactor = 0.05;
+        smoothMousePos.current.x +=
+          (targetMousePos.current.x - smoothMousePos.current.x) * lerpFactor;
+        smoothMousePos.current.y +=
+          (targetMousePos.current.y - smoothMousePos.current.y) * lerpFactor;
+
+        smoothMouseActive.current +=
+          (targetMouseActive.current - smoothMouseActive.current) * lerpFactor;
+
+        program.uniforms.uMouse.value[0] = smoothMousePos.current.x;
+        program.uniforms.uMouse.value[1] = smoothMousePos.current.y;
+        program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
+
+        renderer.render({ scene: mesh });
       }
-
-      const lerpFactor = 0.05;
-      smoothMousePos.current.x +=
-        (targetMousePos.current.x - smoothMousePos.current.x) * lerpFactor;
-      smoothMousePos.current.y +=
-        (targetMousePos.current.y - smoothMousePos.current.y) * lerpFactor;
-
-      smoothMouseActive.current +=
-        (targetMouseActive.current - smoothMouseActive.current) * lerpFactor;
-
-      program.uniforms.uMouse.value[0] = smoothMousePos.current.x;
-      program.uniforms.uMouse.value[1] = smoothMousePos.current.y;
-      program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
-
-      renderer.render({ scene: mesh });
     }
     animateId = requestAnimationFrame(update);
     ctn.appendChild(gl.canvas);

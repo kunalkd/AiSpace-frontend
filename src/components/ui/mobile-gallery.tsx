@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 function lerp(p1: number, p2: number, t: number): number {
   return p1 + (p2 - p1) * t
@@ -26,6 +26,8 @@ export default function MobileImageCarousel({
   const scrollCurrent = useRef(0)
   const scrollTarget = useRef(0)
   const scrollEase = 0.08
+  const [isVisible, setIsVisible] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Duplicate images for continuous scroll
   const duplicatedImages = [...images, ...images]
@@ -43,7 +45,29 @@ export default function MobileImageCarousel({
     })
   }, [duplicatedImages])
 
+  // IntersectionObserver to pause animations when not visible
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting)
+      },
+      { threshold: 0.1 }
+    )
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isVisible) return
+
     const updateScroll = () => {
       if (!innerRef.current || !containerRef.current) return
 
@@ -67,17 +91,30 @@ export default function MobileImageCarousel({
         cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [])
+  }, [isVisible])
 
   useEffect(() => {
+    if (!isVisible) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
     const incrementScroll = () => {
       scrollTarget.current += 1 // Adjust speed as needed
     }
 
-    const interval = setInterval(incrementScroll, 16) // ~60fps
+    intervalRef.current = setInterval(incrementScroll, 16) // ~60fps
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [isVisible])
 
   return (
     <div className={`relative pt-24 w-full ${className}`}>
