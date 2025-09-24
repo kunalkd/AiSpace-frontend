@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { ActivityIcon } from "lucide-react";
 import { Star, Sparkle, Lightbulb } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
@@ -123,12 +123,92 @@ const ServicesSection = () => {
     };
   };
 
-  const [cardStyle, setCardStyle] = useState(() => ({
+  const cardStyle = useMemo(() => ({
     ...getCardStyle(),
     transition:
-      "transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+      "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
     willChange: "transform, opacity, filter",
-  }));
+  }), []);
+
+  const getCardTransform = (index: number, service: (typeof services)[0]) => {
+    const isActive = activeCardIndex >= index;
+    const isCurrentActive = activeCardIndex === index;
+    let baseOffset: number, activeOffset: number, previousOffset: number;
+    if (isMobile) {
+      baseOffset = 0;
+      activeOffset = 0;
+      previousOffset = 0;
+    } else {
+      baseOffset = service.position === "left" ? -120 : 120;
+      activeOffset = service.position === "left" ? -60 : 60;
+      previousOffset = service.position === "left" ? -90 : 90;
+    }
+
+    if (!isActive) {
+      return `translate3d(${baseOffset}px, ${isMobile ? 120 : 200}px, 0) scale3d(${
+        isMobile ? 0.9 : 0.8
+      }, ${isMobile ? 0.9 : 0.8}, 1) rotateY(${service.position === "left" ? "15deg" : "-15deg"})`;
+    }
+    if (isCurrentActive) {
+      return `translate3d(${activeOffset}px, ${
+        isMobile ? 10 + index * 8 : 20 + index * 15
+      }px, 0) scale3d(1, 1, 1) rotateY(0deg)`;
+    }
+    return `translate3d(${previousOffset}px, ${
+      isMobile ? 5 + index * 6 : 10 + index * 12
+    }px, 0) scale3d(${isMobile ? 0.96 : 0.92}, ${isMobile ? 0.96 : 0.92}, 1) rotateY(${service.position === "left" ? "5deg" : "-5deg"})`;
+  };
+
+  const getCardOpacity = (index: number) => {
+    if (activeCardIndex >= index) {
+      return activeCardIndex === index ? 1 : 0.6;
+    }
+    return 0;
+  };
+
+  const getCardBlur = (index: number) => {
+    if (activeCardIndex === index) {
+      return "blur(0px)";
+    }
+    if (activeCardIndex > index) {
+      return "blur(1px)";
+    }
+    return "blur(0px)";
+  };
+
+  const getGlowStyle = (service: (typeof services)[0], isActive: boolean) => {
+    if (!isActive) return {};
+    const glowColors = {
+      purple:
+        "0 0 60px rgba(147, 51, 234, 0.4), 0 0 120px rgba(147, 51, 234, 0.2)",
+      blue: "0 0 60px rgba(59, 130, 246, 0.4), 0 0 120px rgba(59, 130, 246, 0.2)",
+      emerald:
+        "0 0 60px rgba(16, 185, 129, 0.4), 0 0 120px rgba(16, 185, 129, 0.2)",
+      orange:
+        "0 0 60px rgba(249, 115, 22, 0.4), 0 0 120px rgba(249, 115, 22, 0.2)",
+      indigo:
+        "0 0 60px rgba(99, 102, 241, 0.4), 0 0 120px rgba(99, 102, 241, 0.2)",
+      teal: "0 0 60px rgba(20, 184, 166, 0.4), 0 0 120px rgba(20, 184, 166, 0.2)",
+    };
+    return {
+      boxShadow:
+        glowColors[service.glowColor as keyof typeof glowColors] ||
+        glowColors.purple,
+    };
+  };
+
+  const cardStyles = useMemo(() => {
+    return services.map((service, index) => {
+      const isCurrentActive = activeCardIndex === index;
+      return {
+        transform: getCardTransform(index, service),
+        opacity: getCardOpacity(index),
+        filter: getCardBlur(index),
+        pointerEvents: (activeCardIndex >= index ? "auto" : "none") as "auto" | "none",
+        ...getGlowStyle(service, isCurrentActive),
+      };
+    });
+  }, [activeCardIndex, isMobile]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -198,73 +278,6 @@ const ServicesSection = () => {
     };
   }, [isMobile]);
 
-  const getCardTransform = (index: number, service: (typeof services)[0]) => {
-    const isActive = activeCardIndex >= index;
-    const isCurrentActive = activeCardIndex === index;
-    let baseOffset: number, activeOffset: number, previousOffset: number;
-    if (isMobile) {
-      baseOffset = 0;
-      activeOffset = 0;
-      previousOffset = 0;
-    } else {
-      baseOffset = service.position === "left" ? -120 : 120;
-      activeOffset = service.position === "left" ? -60 : 60;
-      previousOffset = service.position === "left" ? -90 : 90;
-    }
-
-    if (!isActive) {
-      return `translateX(${baseOffset}px) translateY(${isMobile ? 120 : 200}px) scale(${
-        isMobile ? 0.9 : 0.8
-      }) rotateY(${service.position === "left" ? "15deg" : "-15deg"})`;
-    }
-    if (isCurrentActive) {
-      return `translateX(${activeOffset}px) translateY(${
-        isMobile ? 10 + index * 8 : 20 + index * 15
-      }px) scale(1) rotateY(0deg)`;
-    }
-    return `translateX(${previousOffset}px) translateY(${
-      isMobile ? 5 + index * 6 : 10 + index * 12
-    }px) scale(${isMobile ? 0.96 : 0.92}) rotateY(${service.position === "left" ? "5deg" : "-5deg"})`;
-  };
-
-  const getCardOpacity = (index: number) => {
-    if (activeCardIndex >= index) {
-      return activeCardIndex === index ? 1 : 0.6;
-    }
-    return 0;
-  };
-
-  const getCardBlur = (index: number) => {
-    if (activeCardIndex === index) {
-      return "blur(0px)";
-    }
-    if (activeCardIndex > index) {
-      return "blur(3px)";
-    }
-    return "blur(0px)";
-  };
-
-  const getGlowStyle = (service: (typeof services)[0], isActive: boolean) => {
-    if (!isActive) return {};
-    const glowColors = {
-      purple:
-        "0 0 60px rgba(147, 51, 234, 0.4), 0 0 120px rgba(147, 51, 234, 0.2)",
-      blue: "0 0 60px rgba(59, 130, 246, 0.4), 0 0 120px rgba(59, 130, 246, 0.2)",
-      emerald:
-        "0 0 60px rgba(16, 185, 129, 0.4), 0 0 120px rgba(16, 185, 129, 0.2)",
-      orange:
-        "0 0 60px rgba(249, 115, 22, 0.4), 0 0 120px rgba(249, 115, 22, 0.2)",
-      indigo:
-        "0 0 60px rgba(99, 102, 241, 0.4), 0 0 120px rgba(99, 102, 241, 0.2)",
-      teal: "0 0 60px rgba(20, 184, 166, 0.4), 0 0 120px rgba(20, 184, 166, 0.2)",
-    };
-    return {
-      boxShadow:
-        glowColors[service.glowColor as keyof typeof glowColors] ||
-        glowColors.purple,
-    };
-  };
-
   return (
     <div
       ref={sectionRef}
@@ -287,8 +300,7 @@ const ServicesSection = () => {
           "
           opacity={0.3}
           zIndex={1}
-          enableRotation={true}
-          rotationRange={10}
+          enableRotation={false}
         />
         <FloatingIcon
           icon={<Sparkle weight="thin" />}
@@ -302,8 +314,7 @@ const ServicesSection = () => {
           "
           opacity={0.4}
           zIndex={1}
-          enableRotation={true}
-          rotationRange={15}
+          enableRotation={false}
         />
         <FloatingIcon
           icon={<Star weight="fill" />}
@@ -315,8 +326,7 @@ const ServicesSection = () => {
           "
           opacity={0.5}
           zIndex={1}
-          enableRotation={true}
-          rotationRange={20}
+          enableRotation={false}
         />
 
         <div className="container px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 max-w-6xl mx-auto h-full flex flex-col">
@@ -356,17 +366,13 @@ const ServicesSection = () => {
               return (
                 <div
                   key={index}
-                  className={`absolute overflow-hidden backdrop-blur-sm border border-white/20 ${
+                  className={`absolute overflow-hidden border border-white/20 ${
                     activeCardIndex >= index ? "animate-card-enter" : ""
                   }`}
                   style={{
                     ...cardStyle,
                     zIndex: 10 + index,
-                    transform: getCardTransform(index, service),
-                    opacity: getCardOpacity(index),
-                    filter: getCardBlur(index),
-                    pointerEvents: activeCardIndex >= index ? "auto" : "none",
-                    ...getGlowStyle(service, isCurrentActive),
+                    ...cardStyles[index],
                   }}
                 >
                   <div
@@ -397,7 +403,7 @@ const ServicesSection = () => {
                     </div>
                     {/* Emoji section */}
                     <div className="w-32 sm:w-36 md:w-44 lg:w-52 flex-shrink-0 relative h-80 flex items-center justify-center">
-                      <div className="absolute inset-0 backdrop-blur-xl shadow-lg flex items-center justify-center">
+                      <div className="absolute inset-0 shadow-lg flex items-center justify-center">
                         <div className="relative">
                           <span className="relative text-6xl drop-shadow-2xl">
                             {service.emoji}
