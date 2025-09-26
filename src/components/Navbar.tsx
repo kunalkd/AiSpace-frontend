@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { cn, throttle } from "@/lib/utils"
 import { Menu, X } from "lucide-react"
+import CONSTANTS from "@/Constant";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -106,7 +107,7 @@ const Navbar = () => {
             <div className="relative">
               <div className="scale-[3] sm:scale-[3] md:scale-[2] lg:scale-[4] xl:scale-[5] w-[60px] mt-2 h-[60px] ml-4 sm:w-[60px] sm:ml-4 sm:h-[60px] md:ml-4 md:w-[100px] md:h-[100px] lg:w-[40px] lg:h-[40px] bg-transparent rounded-lg flex items-center justify-center transition-transform duration-300">
                 <img
-                  src="/Creator-space.png"
+                  src={CONSTANTS.HOST_URL+"/Creator-space.png"}
                   alt="Sparkle Icon"
                   className="w-full h-full object-contain mx-auto drop-shadow-lg"
                   loading="lazy"

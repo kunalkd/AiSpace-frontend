@@ -10,6 +10,7 @@ import type { LucideIcon } from "lucide-react"
 import FloatingIcon from "./icon-background"
 import BackgroundBlobs from "./BackgroundBlobs"
 import lines from "/3lines.svg"
+import CONSTANTS from "@/Constant"
 
 // Type definitions
 interface Statistic {
@@ -277,7 +278,7 @@ const BlobAnimationComponent = ({ shapes, isHovered, onMouseEnter, onMouseLeave 
           transition={{ delay: 0.4, duration: 0.6 }}
         >
           <img
-            src="/mainlogo.svg"
+            src={CONSTANTS.HOST_URL+"/mainlogo.svg"}
             alt="main logo"
             loading="lazy"
             className="w-16 h-16 sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-40 lg:h-40 mx-auto drop-shadow-lg"

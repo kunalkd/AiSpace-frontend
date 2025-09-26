@@ -1,5 +1,6 @@
 "use client"
 
+import CONSTANTS from "@/Constant"
 import { useEffect, useRef, useState } from "react"
 
 function lerp(p1: number, p2: number, t: number): number {
@@ -13,9 +14,9 @@ interface MobileImageCarouselProps {
 
 export default function MobileImageCarousel({
   images = [
-    `/placeholder.svg?height=1280&width=720&query=mobile showcase image 1`,
-    `/placeholder.svg?height=1280&width=720&query=mobile showcase image 2`,
-    `/placeholder.svg?height=1280&width=720&query=mobile showcase image 3`,
+    `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 1`,
+    `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 2`,
+    `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 3`,
   ],
   className = "",
 }: MobileImageCarouselProps) {

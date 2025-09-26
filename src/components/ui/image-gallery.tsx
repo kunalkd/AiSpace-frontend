@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from "ogl"
+import CONSTANTS from "@/Constant"
 
 type GL = Renderer["gl"]
 
@@ -516,18 +517,18 @@ class ImageApp {
     font: string,
   ) {
     const defaultItems = [
-      { image: `/placeholder.svg?height=1280&width=720&query=modern tech showcase`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=creative design process`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=digital innovation`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=brand storytelling`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=ai technology demo`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=creative workflow`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=marketing campaign`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=product showcase`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=team collaboration`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=business growth`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=creative solutions`, text: "" },
-      { image: `/placeholder.svg?height=1280&width=720&query=digital transformation`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=modern tech showcase`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative design process`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=digital innovation`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=brand storytelling`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=ai technology demo`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative workflow`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=marketing campaign`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=product showcase`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=team collaboration`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=business growth`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative solutions`, text: "" },
+      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=digital transformation`, text: "" },
     ]
 
     const getNumberOfImages = () => {

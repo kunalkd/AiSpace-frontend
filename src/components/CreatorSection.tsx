@@ -9,7 +9,7 @@ import { Star, Minus, Circle, Heart, Sparkle } from "@phosphor-icons/react"
 import GlowingButton from "./animated-button"
 import FloatingIcon from "./icon-background"
 import BackgroundBlobs from "./BackgroundBlobs"
-
+import CONSTANTS from "@/Constant"
 // Updated Project interface and data with emojis
 interface Project {
   id: number
@@ -21,37 +21,37 @@ const projects: Project[] = [
   {
     id: 1,
     title: "subrat_ai ",
-    image: "/subrat.png",
+    image: CONSTANTS.HOST_URL+"/subrat.png",
   },
   {
     id: 2,
     title: "techonfreak",
-    image: "/techonfreak.png",
+    image: CONSTANTS.HOST_URL+"/techonfreak.png",
   },
   {
     id: 3,
     title: "v.i.s.h.ai",
-    image: "/vishi.png",
+    image: CONSTANTS.HOST_URL+"/vishi.png",
   },
   {
     id: 4,
     title: "parasmadan.in",
-    image: "/Parasmadam.png",
+    image: CONSTANTS.HOST_URL+"/Parasmadam.png",
   },
   {
     id: 5,
     title: "drtechtrick",
-    image: "/drtechtrick.png",
+    image: CONSTANTS.HOST_URL+"/drtechtrick.png",
   },
   {
     id: 6,
     title: "theroshankrishna",
-    image: "/TheRoshan.png",
+    image: CONSTANTS.HOST_URL+"/TheRoshan.png",
   },
   {
     id: 7,
     title: "techbyjairaj",
-    image: "/techbyjairaj.png",
+    image: CONSTANTS.HOST_URL+"/techbyjairaj.png",
   },
 ]
 

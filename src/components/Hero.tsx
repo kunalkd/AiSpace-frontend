@@ -7,6 +7,7 @@ const MobileImageCarousel = lazy(() => import("@/components/ui/mobile-gallery"))
 import GlowingButton from "@/components/animated-button"
 import FloatingIcon from "@/components/icon-background"
 import { throttle } from "@/lib/utils"
+import CONSTANTS from '@/Constant';
 
 const GalleryPlaceholder = () => (
   <div className="relative w-full h-[62vh] sm:h-[56vh] md:h-[58vh] lg:h-[60vh]" aria-hidden="true" />
@@ -46,12 +47,12 @@ export default function Hero() {
   }
 
   const imageData = [
-    { image: `/1.jpg`, text: "" },
-    { image: `/2.jpg`, text: "" },
-    { image: `/3.jpg`, text: "" },
-    { image: `/4.jpg`, text: "" },
-    { image: `/5.jpg`, text: "" },
-    { image: `/6.jpg`, text: "" },
+    { image: `${CONSTANTS.HOST_URL}/1.jpg`, text: "" },
+    { image: `${CONSTANTS.HOST_URL}/2.jpg`, text: "" },
+    { image: `${CONSTANTS.HOST_URL}/3.jpg`, text: "" },
+    { image: `${CONSTANTS.HOST_URL}/4.jpg`, text: "" },
+    { image: `${CONSTANTS.HOST_URL}/5.jpg`, text: "" },
+    { image: `${CONSTANTS.HOST_URL}/6.jpg`, text: "" },
   ]
 
   const mobileImageUrls: string[] = imageData.slice(0, 3).map((item) => item.image)
