@@ -1,5 +1,3 @@
-  "use client"
-
 import { useEffect, useState, lazy, Suspense, useRef } from "react"
 const Galaxy = lazy(() => import("./Galaxy-bg"))
 const ImageCircularGallery = lazy(() => import("@/components/ui/image-gallery"))
@@ -43,7 +41,7 @@ export default function Hero() {
   }, [isMobile])
 
   const getScrollSpeed = () => {
-    return 1
+    return 2
   }
 
   const imageData = [
@@ -55,21 +53,43 @@ export default function Hero() {
     { image: `${CONSTANTS.HOST_URL}/6.jpg`, text: "" },
   ]
 
-  const mobileImageUrls: string[] = imageData.slice(0, 3).map((item) => item.image)
+  const videoData = [
+    { video: `${CONSTANTS.HOST_URL}/1.mp4`, text: "" },
+    { video: `${CONSTANTS.HOST_URL}/2.mp4`, text: "" },
+    { video: `${CONSTANTS.HOST_URL}/3.mp4`, text: "" },
+    { video: `${CONSTANTS.HOST_URL}/4.mp4`, text: "" },
+    { video: `${CONSTANTS.HOST_URL}/5.mp4`, text: "" },
+    { video: `${CONSTANTS.HOST_URL}/6.mp4`, text: "" },
+  ]
+
+  const useVideos = CONSTANTS.MEDIA_TYPE === 'video'
+  const mediaData = useVideos
+    ? videoData.map(item => ({ media: item.video, text: item.text, type: 'video' as const }))
+    : imageData.map(item => ({ media: item.image, text: item.text, type: 'image' as const }))
+
+  const mobileMedia = mediaData.slice(0, 3).map((item) => ({ src: item.media, type: item.type }))
 
   useEffect(() => {
-    const preloadImages = () => {
-      const imagesToPreload = isMobile ? mobileImageUrls.slice(0, 1) : imageData.slice(0, 2)
-      imagesToPreload.forEach((imageSrc) => {
-        const img = new Image()
-        img.src = typeof imageSrc === "string" ? imageSrc : imageSrc.image
+    const preloadMedia = () => {
+      const mediaToPreload = isMobile ? mobileMedia : mediaData
+      mediaToPreload.forEach((item) => {
+        if (item.type === 'video') {
+          const video = document.createElement('video')
+          video.src = item.media
+          video.preload = 'auto'
+          video.muted = true // Required for autoplay
+          video.load() // Force loading
+        } else {
+          const img = new Image()
+          img.src = item.media
+        }
       })
     }
 
     // Preload after a short delay to not block initial render
-    const timer = setTimeout(preloadImages, 100)
+    const timer = setTimeout(preloadMedia, 100)
     return () => clearTimeout(timer)
-  }, [isMobile, mobileImageUrls])
+  }, [isMobile, mobileMedia, mediaData])
 
   return (
     <section id="hero" className="relative min-h-screen overflow-hidden" aria-label="Hero section">
@@ -93,7 +113,7 @@ export default function Hero() {
               <span className="relative inline-block">
                 {"d"}
                 <FloatingIcon
-                  icon="/3zap.svg"
+                  icon={`${CONSTANTS.HOST_URL}/3zap.svg`}
                   containerClassName="absolute -top-6 left-1/2 -translate-x-1/3 w-8 h-8 sm:-top-6 sm:w-10 sm:h-10 md:-top-8 md:w-12 md:h-12 lg:-top-8 lg:w-12 lg:h-12 xl:-top-10 xl:w-14 xl:h-16"
                   opacity={1}
                   zIndex={10}
@@ -147,12 +167,12 @@ export default function Hero() {
           <Suspense fallback={<GalleryPlaceholder />}>
             {isMobile ? (
               <div className="relative w-full pt-20 px-4 py-8">
-                <MobileImageCarousel images={mobileImageUrls} className="w-full mx-auto" />
+                <MobileImageCarousel media={mobileMedia} className="w-full mx-auto" />
               </div>
             ) : (
               <div className="relative w-full h-[62vh] sm:h-[56vh] md:h-[58vh] lg:h-[60vh] z-10">
                 <ImageCircularGallery
-                  items={imageData}
+                  items={mediaData}
                   bend={-5}
                   skewStrength={3.0}
                   depthStrength={2.0}

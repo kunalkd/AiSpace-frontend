@@ -8,19 +8,19 @@ function lerp(p1: number, p2: number, t: number): number {
 }
 
 interface MobileImageCarouselProps {
-  images?: string[]
+  media?: { src: string, type: 'image' | 'video' }[]
   className?: string
 }
 
 export default function MobileImageCarousel({
-  images = [
-    `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 1`,
-    `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 2`,
-    `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 3`,
+  media = [
+    { src: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 1`, type: 'image' as const },
+    { src: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 2`, type: 'image' as const },
+    { src: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=mobile showcase image 3`, type: 'image' as const },
   ],
   className = "",
 }: MobileImageCarouselProps) {
-  const imageRefs = useRef<(HTMLImageElement | null)[]>([])
+  const mediaRefs = useRef<(HTMLImageElement | HTMLVideoElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number>(0)
@@ -30,21 +30,21 @@ export default function MobileImageCarousel({
   const [isVisible, setIsVisible] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Duplicate images for continuous scroll
-  const duplicatedImages = [...images, ...images]
+  // Duplicate media for continuous scroll
+  const duplicatedMedia = [...media, ...media]
 
   useEffect(() => {
-    imageRefs.current = imageRefs.current.slice(0, duplicatedImages.length)
+    mediaRefs.current = mediaRefs.current.slice(0, duplicatedMedia.length)
 
-    duplicatedImages.forEach((image, index) => {
-      if (imageRefs.current[index]) {
-        const imageEl = imageRefs.current[index]
-        if (imageEl) {
-          imageEl.src = image
+    duplicatedMedia.forEach((item, index) => {
+      if (mediaRefs.current[index]) {
+        const mediaEl = mediaRefs.current[index]
+        if (mediaEl) {
+          mediaEl.src = item.src
         }
       }
     })
-  }, [duplicatedImages])
+  }, [duplicatedMedia])
 
   // IntersectionObserver to pause animations when not visible
   useEffect(() => {
@@ -128,18 +128,31 @@ export default function MobileImageCarousel({
           ref={innerRef}
           className="flex"
         >
-          {duplicatedImages.map((image, index) => (
+          {duplicatedMedia.map((item, index) => (
             <div key={index} className="flex-shrink-0 w-full">
               <div className="relative aspect-[4/5] w-[250px] mx-auto rounded-xl overflow-hidden bg-black">
-                <img
-                  ref={(el) => (imageRefs.current[index] = el)}
-                  src={image || "/placeholder.svg"}
-                  alt={`Gallery image ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onContextMenu={(e) => e.preventDefault()}
-                />
+                {item.type === 'video' ? (
+                  <video
+                    ref={(el) => (mediaRefs.current[index] = el)}
+                    src={item.src || "/placeholder.svg"}
+                    className="w-full h-full object-cover"
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                ) : (
+                  <img
+                    ref={(el) => (mediaRefs.current[index] = el)}
+                    src={item.src || "/placeholder.svg"}
+                    alt={`Gallery media ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                )}
 
-                {/* Image overlay with subtle gradient */}
+                {/* Media overlay with subtle gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
               </div>
             </div>

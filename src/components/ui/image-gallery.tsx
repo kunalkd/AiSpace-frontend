@@ -137,7 +137,8 @@ interface Viewport {
 interface ImageMediaProps {
   geometry: Plane
   gl: GL
-  image: string
+  media: string
+  type: 'image' | 'video'
   index: number
   length: number
   renderer: Renderer
@@ -159,7 +160,8 @@ class ImageMedia {
   extra = 0
   geometry: Plane
   gl: GL
-  image: string
+  media: string
+  type: 'image' | 'video'
   index: number
   length: number
   renderer: Renderer
@@ -191,12 +193,13 @@ class ImageMedia {
   depthStrength: number
   curveYStrength: number
   gapEqualize: number
-  imageElement!: HTMLImageElement
+  mediaElement!: HTMLImageElement | HTMLVideoElement
 
   constructor({
     geometry,
     gl,
-    image,
+    media,
+    type,
     index,
     length,
     renderer,
@@ -215,7 +218,8 @@ class ImageMedia {
   }: ImageMediaProps) {
     this.geometry = geometry
     this.gl = gl
-    this.image = image
+    this.media = media
+    this.type = type
     this.index = index
     this.length = length
     this.renderer = renderer
@@ -241,10 +245,20 @@ class ImageMedia {
   createShader() {
     const texture = new Texture(this.gl, { generateMipmaps: false })
 
-    // Create image element
-    this.imageElement = new Image()
-    this.imageElement.crossOrigin = "anonymous"
-    this.imageElement.oncontextmenu = (e) => e.preventDefault()
+    // Create media element
+    if (this.type === 'video') {
+      this.mediaElement = document.createElement('video')
+      this.mediaElement.crossOrigin = "anonymous"
+      this.mediaElement.muted = true
+      this.mediaElement.autoplay = true
+      this.mediaElement.loop = true
+      this.mediaElement.playsInline = true
+      this.mediaElement.oncontextmenu = (e) => e.preventDefault()
+    } else {
+      this.mediaElement = new Image()
+      this.mediaElement.crossOrigin = "anonymous"
+      ;(this.mediaElement as HTMLImageElement).oncontextmenu = (e) => e.preventDefault()
+    }
 
     this.program = new Program(this.gl, {
       depthTest: false,
@@ -302,17 +316,37 @@ class ImageMedia {
       transparent: true,
     })
 
-    this.imageElement.addEventListener("load", () => {
-      texture.image = this.imageElement
-      this.program.uniforms.uImageSizes.value = [
-        this.imageElement.naturalWidth || 9,
-        this.imageElement.naturalHeight || 16,
-      ]
+    const onLoad = () => {
+      texture.image = this.mediaElement
+      if (this.type === 'video') {
+        this.program.uniforms.uImageSizes.value = [
+          (this.mediaElement as HTMLVideoElement).videoWidth || 9,
+          (this.mediaElement as HTMLVideoElement).videoHeight || 16,
+        ]
+      } else {
+        this.program.uniforms.uImageSizes.value = [
+          (this.mediaElement as HTMLImageElement).naturalWidth || 9,
+          (this.mediaElement as HTMLImageElement).naturalHeight || 16,
+        ]
+      }
       texture.needsUpdate = true
-    })
+    }
 
-    // Load the image
-    this.imageElement.src = this.image
+    if (this.type === 'video') {
+      ;(this.mediaElement as HTMLVideoElement).addEventListener("loadedmetadata", onLoad)
+    } else {
+      ;(this.mediaElement as HTMLImageElement).addEventListener("load", onLoad)
+    }
+
+    // Load the media
+    this.mediaElement.src = this.media
+
+    if (this.type === 'video') {
+      const video = this.mediaElement as HTMLVideoElement
+      video.addEventListener('loadedmetadata', () => {
+        video.play().catch(() => {})
+      })
+    }
   }
 
   createMesh() {
@@ -357,6 +391,11 @@ class ImageMedia {
 
     this.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y]
 
+    // Update video texture each frame
+    if (this.type === 'video') {
+      this.program.uniforms.tMap.value.needsUpdate = true
+    }
+
     const planeOffset = this.baseScaleX / 2
     const viewportOffset = this.viewport.width / 2
     this.isBefore = raw + planeOffset < -viewportOffset
@@ -398,14 +437,14 @@ class ImageMedia {
   }
 
   destroy() {
-    if (this.imageElement) {
-      this.imageElement.src = ""
+    if (this.mediaElement) {
+      this.mediaElement.src = ""
     }
   }
 }
 
 interface AppConfig {
-  items?: { image: string; text: string }[]
+  items?: { media: string; text: string; type: 'image' | 'video' }[]
   bend?: number
   textColor?: string
   borderRadius?: number
@@ -435,7 +474,7 @@ class ImageApp {
   planeGeometry!: Plane
 
   medias: ImageMedia[] = []
-  mediasImages: { image: string; text: string }[] = []
+  mediasImages: { media: string; text: string; type: 'image' | 'video' }[] = []
 
   screen!: { width: number; height: number }
   viewport!: { width: number; height: number }
@@ -510,25 +549,25 @@ class ImageApp {
   }
 
   createMedias(
-    items: { image: string; text: string }[] | undefined,
+    items: { media: string; text: string; type: 'image' | 'video' }[] | undefined,
     bend = 1,
     textColor: string,
     borderRadius: number,
     font: string,
   ) {
     const defaultItems = [
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=modern tech showcase`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative design process`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=digital innovation`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=brand storytelling`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=ai technology demo`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative workflow`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=marketing campaign`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=product showcase`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=team collaboration`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=business growth`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative solutions`, text: "" },
-      { image: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=digital transformation`, text: "" },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=modern tech showcase`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative design process`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=digital innovation`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=brand storytelling`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=ai technology demo`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative workflow`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=marketing campaign`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=product showcase`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=team collaboration`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=business growth`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=creative solutions`, text: "", type: 'image' as const },
+      { media: `${CONSTANTS.HOST_URL}/placeholder.svg?height=1280&width=720&query=digital transformation`, text: "", type: 'image' as const },
     ]
 
     const getNumberOfImages = () => {
@@ -547,7 +586,8 @@ class ImageApp {
       return new ImageMedia({
         geometry: this.planeGeometry,
         gl: this.gl,
-        image: data.image,
+        media: data.media,
+        type: data.type,
         index,
         length: this.mediasImages.length,
         renderer: this.renderer,
@@ -625,7 +665,7 @@ class ImageApp {
 }
 
 export interface ImageCircularGalleryProps {
-  items?: { image: string; text: string }[]
+  items?: { media: string; text: string; type: 'image' | 'video' }[]
   bend?: number
   textColor?: string
   borderRadius?: number
